@@ -98,11 +98,37 @@ export const currentUser = writable(null);
 
 let _currentUser = null;
 export function signIn(email, password) {
-  _currentUser = {id: MD5(email), name: email};
-  currentUser.set(_currentUser);
+  firebase.auth().signInWithEmailAndPassword(email, password)
+  .then(function(userCredential) {
+    let user = userCredential.user;
+    console.log(user)
+
+    _currentUser = {id: user.uid, email: user.email, name: user.displayName};
+    currentUser.set(_currentUser);
+  })
+  .catch(function(error) {
+    // とりあえず手抜きでalert
+    window.alert('login failed. ' + error.code + ':' + error.message);
+  });
 }
 
-export const signUp = signIn;
+export function signUp(email, password) {
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+  .then(function(userCredential) {
+    let user = userCredential.user;
+    console.log(user)
+
+    _currentUser = {id: user.uid, email: user.email, name: user.displayName};
+    currentUser.set(_currentUser);
+  })
+  .then(function() {
+    window.alert('verification mail sent');
+  })
+  .catch(function(error) {
+    // とりあえず手抜きでalert
+    window.alert('login failed. ' + error.code + ':' + error.message);
+  });
+}
 
 export function signOut() {
   _currentUser = null;
