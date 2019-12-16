@@ -122,7 +122,7 @@ export function signIn(email, password) {
   })
   .catch(function(error) {
     // とりあえず手抜きでalert
-    window.alert('login failed. ' + error.code + ':' + error.message);
+    window.alert('sign-in failed. ' + error.code + ':' + error.message);
   });
 }
 
@@ -142,11 +142,15 @@ export function signUp(email, password) {
   })
   .catch(function(error) {
     // とりあえず手抜きでalert
-    window.alert('login failed. ' + error.code + ':' + error.message);
+    window.alert('sign-in failed. ' + error.code + ':' + error.message);
   });
 }
 
 export function signOut() {
-  _currentUser = null;
-  currentUser.set(null);
+  firebase.auth().signOut().then(function() {
+    _currentUser = null;
+    currentUser.set(null);
+  }).catch(function(error) {
+    window.alert('sign-out failed. ' + error.code + ':' + error.message);
+  });
 }
