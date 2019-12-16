@@ -101,9 +101,18 @@ export function signIn(email, password) {
   firebase.auth().signInWithEmailAndPassword(email, password)
   .then(function(userCredential) {
     let user = userCredential.user;
-    console.log(user)
+    //console.log(user)
 
-    _currentUser = {id: user.uid, email: user.email, name: user.displayName};
+    if (!user.emailVerified) {
+      const actionCodeSettings = {
+        url: window.location.origin + `/`
+      };
+      return user.sendEmailVerification(actionCodeSettings).then(function() {
+        window.alert('確認メールを送信しました。メール内のURLからサインインしなおしてください。');
+      });
+    }
+
+    _currentUser = {id: user.uid, email: user.email, name: user.email};
     currentUser.set(_currentUser);
   })
   .catch(function(error) {
@@ -118,11 +127,13 @@ export function signUp(email, password) {
     let user = userCredential.user;
     console.log(user)
 
-    _currentUser = {id: user.uid, email: user.email, name: user.displayName};
-    currentUser.set(_currentUser);
+    const actionCodeSettings = {
+      url: window.location.origin + `/`
+    };
+    return user.sendEmailVerification(actionCodeSettings);
   })
   .then(function() {
-    window.alert('verification mail sent');
+    window.alert('確認メールを送信しました。メール内のURLからサインインしなおしてください。');
   })
   .catch(function(error) {
     // とりあえず手抜きでalert
