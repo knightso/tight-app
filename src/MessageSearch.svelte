@@ -3,6 +3,8 @@
   import ChatMessageList from './ChatMessageList.svelte';
   import * as api from './api.js';
 
+  export let roomId;
+
   let searchInput;
   let searchText;
   let messages = [];
@@ -18,7 +20,7 @@
     }
 
     notFound = false;
-    messages = api.searchMessages(searchText);
+    messages = api.searchMessages(roomId, searchText);
     notFound = messages.length === 0;
   }
 </script>
@@ -32,6 +34,8 @@
 
   .search-text {
     width: 100%;
+    padding-left: 40px;
+    background: url(https://fonts.gstatic.com/s/i/materialicons/search/v1/24px.svg) no-repeat scroll 7px 7px;
     outline: none;
     border: none;
     border-bottom: solid 1px #ccc;
@@ -45,7 +49,7 @@
 
 <div class='container'>
   <form on:submit|preventDefault={onSearch}>
-    <input class='search-text' type='text' placeholder='Search' bind:this={searchInput} bind:value={searchText} required />
+    <input class='search-text' type='search' placeholder='Search' bind:this={searchInput} bind:value={searchText} required />
   </form>
 
   {#if messages.length > 0}

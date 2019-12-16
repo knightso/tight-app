@@ -5,14 +5,12 @@
 
   let email;
   let password;
-
-  let emailInput;
-  let passwordInput;
+  let form;
 
   let isSignIn = true;
 
   function submit() {
-    if (emailInput.validationMessage || passwordInput.validationMessage) {
+    if (!form.checkValidity()) {
       return;
     }
 
@@ -69,10 +67,10 @@
 
 <div class='container'>
   <h1>{title} : {isSignIn ? 'サインイン' : 'アカウント作成'}</h1>
-  <form class='container' on:submit|preventDefault={submit}>
+  <form class='container' bind:this={form} on:submit|preventDefault={submit}>
     <div class='input-fields'>
-      <label>Email</label><input type='email' bind:this={emailInput} bind:value={email} required />
-      <label>Password</label><input type='password' bind:this={passwordInput} bind:value={password} required />
+      <label>Email</label><input type='email' bind:value={email} autocomplete='email' required />
+      <label>Password</label><input type='password' bind:value={password} autocomplete={isSignIn ? 'current-password' : 'new-password'} required />
     </div>
 
     <button>{isSignIn ? 'Sign In' : 'Sign Up'}</button>

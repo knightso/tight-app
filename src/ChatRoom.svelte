@@ -5,11 +5,12 @@
   import MessageInput from './MessageInput.svelte';
   import MessageSearch from './MessageSearch.svelte';
   import * as api from './api.js';
-  import { messages } from './api.js';
 
   export let user;
+  export let room;
 
-  let name = 'general';
+  $: messages = api.getMessages(room.id);
+
   let messageInput;
   let isShowSearch = false;
   let isShowHistory = false;
@@ -23,7 +24,7 @@
   }
 
   function addMessage(event) {
-    api.addMessage(user, event.detail.text);
+    api.addMessage(room.id, user, event.detail.text);
   }
 
   function onSelectSearchMessage(event) {
@@ -33,13 +34,13 @@
 
   function onEdit(event) {
     const {messageId, text} = event.detail;
-    api.editMessage(user, messageId, text);
+    api.editMessage(room.id, user, messageId, text);
   }
 
   function onDelete(event) {
     const message = event.detail.message;
     if (confirmDelete(message)) {
-      api.deleteMessage(message.id);
+      api.deleteMessage(room.id, message.id);
     }
   }
 
@@ -89,6 +90,8 @@
   #search-box {
     margin-left: auto;
     margin-bottom: 0;
+    padding-left: 40px;
+    background: url(https://fonts.gstatic.com/s/i/materialicons/search/v1/24px.svg) no-repeat scroll 7px 7px;
     cursor: pointer;
   }
 
@@ -113,7 +116,7 @@
 
 <div class='container' tabindex=0 on:keydown={onKeydown}>
   <header class='room-header'>
-    <p class='room-name'>{name}</p>
+    <p class='room-name'>{room.name}</p>
     <input id='search-box' type='text' placeholder='Search' on:click={onShowSearch} />
   </header>
 
@@ -133,6 +136,6 @@
 
 {#if isShowSearch}
   <Dialog on:close={onHideSearch}>
-    <MessageSearch on:select={onSelectSearchMessage} />
+    <MessageSearch roomId={room.id} on:select={onSelectSearchMessage} />
   </Dialog>
 {/if}

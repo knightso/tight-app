@@ -2,30 +2,17 @@
   import { createEventDispatcher } from 'svelte';
   import { rooms } from './api.js';
 
+  export let userName;
+  export let roomId;
+
   const dispatch = createEventDispatcher();
 
-  let roomName;
-  let roomNameInput;
-  let isShowRoomForm = false;
-
-  function showRoomForm() {
-    isShowRoomForm = true;
-  }
-  function hideRoomForm() {
-    isShowRoomForm = false;
+  function filterRoomsForUser(allRooms) {
+    return allRooms.filter(room => room.members.includes(userName));
   }
 
-  function onCreateRoom() {
-    if (roomNameInput.validationMessage) {
-      return;
-    }
-
-    dispatch('add-room', {
-      name: roomName,
-    });
-
-    roomName = null;
-    hideRoomForm();
+  function onAddRoom() {
+    dispatch('add-room');
   }
 
   function onSelectRoom(roomId) {
@@ -57,19 +44,18 @@
     background: #63a4ff;
   }
 
-  .room-form {
-    padding: 0 10px;
-  }
-  .room-form > input {
-    width: 100%;
-  }
-
   ol {
     padding: 0;
+    margin-top: 0;
   }
 
   .room-list-item:hover {
     background: #63a4ff;
+  }
+  .room-list-item.selected {
+    background: #004ba0;
+    border-top: solid 1px #53a4ff;
+    border-bottom: solid 1px #53a4ff;
   }
   .room-list-item > a {
     display: inline-block;
@@ -82,23 +68,16 @@
   }
 </style>
 
-<svelte:window on:click={hideRoomForm}/>
-
 <div class='room-list-header'>
   <p>room</p>
-  <button class='add-room-button' on:click|stopPropagation={showRoomForm}>
+  <button class='add-room-button' on:click={onAddRoom}>
     <i class='material-icons'>add</i>
   </button>
 </div>
 <ol>
-  {#each $rooms as room (room.id)}
-    <li class='room-list-item'><a href='/rooms/{room.id}' on:click|preventDefault={() => onSelectRoom(room.id)}>{room.name}</a></li>
-  {/each}
-  {#if isShowRoomForm}
-    <li>
-      <form class='room-form' on:submit|preventDefault={onCreateRoom}>
-        <input on:click|stopPropagation type='text' bind:this={roomNameInput} bind:value={roomName} required>
-      </form>
+  {#each filterRoomsForUser($rooms) as room (room.id)}
+    <li class='room-list-item' class:selected={roomId === room.id}>
+      <a href='/rooms/{room.id}' on:click|preventDefault={() => onSelectRoom(room.id)}>{room.name}</a>
     </li>
-  {/if}
+  {/each}
 </ol>

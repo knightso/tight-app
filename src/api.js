@@ -11,18 +11,14 @@ export function roomList() {
   return _rooms;
 }
 
-function newRoom(id, name) {
-  return {id: id, name: name, users: []};
-}
-
-export function addRoom(name) {
+export function addRoom(name, members) {
   const id = new Date().getTime().toString();
-  const room = newRoom(id, name);
-
-  console.log(room);
+  const room = {id: id, name: name, members: members};
 
   _rooms = [..._rooms, room];
   rooms.update(list => list.concat(room));
+
+  return id;
 }
 
 export function editRoomName(roomId, name) {
@@ -35,6 +31,10 @@ export function editRoomName(roomId, name) {
   });
 }
 
+export function getRoom(roomId) {
+  return _rooms.find(r => r.id === roomId);
+}
+
 
 // message
 
@@ -42,33 +42,38 @@ export const messages = writable([]);
 let _messages = [];
 let messageHistories = {};
 
-export function messageList() {
-  return _messages;
+export function getMessages(roomId) {
+  let roomMessages = messages[roomId];
+  if (!roomMessages) {
+    roomMessages = writable([]);
+    messages[roomId] = roomMessages;
+  }
+  return roomMessages;
 }
 
 function newMessage(messageId, user, text) {
   return {id: messageId, userId: user.id, userName: user.name, text: text, timestamp: new Date()};
 }
 
-export function addMessage(user, text) {
+export function addMessage(roomId, user, text) {
   const id = new Date().getTime().toString();
   const message = newMessage(id, user, text);
 
   messageHistories[id] = [message];
-  _messages = [..._messages, message];
+  _messages[roomId] = [..._messages[roomId] || [], message];
 
-  messages.update(list => list.concat(message));
+  getMessages(roomId).update(list => list.concat(message));
 }
 
-export function editMessage(user, messageId, text) {
+export function editMessage(roomId, user, messageId, text) {
   const message = newMessage(messageId, user, text);
 
   messageHistories[messageId] = [...getMessageHistories(messageId), message];
 
-  const idx = _messages.findIndex(m => m.id === messageId);
-  _messages[idx] = message;
+  const idx = _messages[roomId].findIndex(m => m.id === messageId);
+  _messages[roomId][idx] = message;
 
-  messages.update(list => {
+  getMessages(roomId).update(list => {
     list[idx] = message;
     return list;
   });
@@ -76,9 +81,9 @@ export function editMessage(user, messageId, text) {
 
 export function deleteMessage(messageId) {
   const idx = _messages.findIndex(m => m.id === messageId);
-  _messages[idx].deleted = true;
+  _messages[roomId][idx].deleted = true;
 
-  messages.update(list => {
+  getMessages(roomId).update(list => {
     list[idx].deleted = true;
     return list;
   });
@@ -88,8 +93,8 @@ export function getMessageHistories(messageId) {
   return messageHistories[messageId] || [];
 }
 
-export function searchMessages(text) {
-  return _messages.filter(message => message.text.includes(text));
+export function searchMessages(roomId, text) {
+  return (_messages[roomId] || []).filter(message => message.text.includes(text));
 }
 
 // user account

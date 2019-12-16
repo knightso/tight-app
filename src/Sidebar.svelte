@@ -4,11 +4,21 @@
 
   export let title;
   export let userName;
+  export let roomId = null;
+
+  let isShowUserDetail;
 
   const dispatch = createEventDispatcher();
 
   function onSignOut() {
     dispatch('signOut');
+  }
+
+  function toggleUserDetail() {
+    isShowUserDetail = !isShowUserDetail;
+  }
+  function hideUserDetail() {
+    isShowUserDetail = false;
   }
 </script>
 
@@ -28,43 +38,62 @@
     margin: 10px 0 0 0;
     padding-left: 10px;
   }
-  .sidebar-contents {
-    padding: 0;
-    overflow-x: hidden;
-  }
-  .sidebar-item:hover {
-    background: #63a4ff;
-  }
-  .sidebar-item > a {
-    display: inline-block;
-    color: white;
-    width: 100%;
-    padding: 4px 10px;
-  }
 
+  .user-container {
+    display: flex;
+    flex-direction: column;
+  }
   .user-name {
+    float: left;
     margin: 4px 0 0 0;
     padding-left: 10px;
     font-size: 14px;
     color: white;
   }
-  .user-name::after {
-    content: '▼';
+  .detail-button {
+    height: 1em;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
     color: white;
-    margin-left: 4px;
-    font-size: 12px;
+  }
+  .detail-button > i {
+    height: 100%;
+  }
+  .user-detail {
+    background: #000a;
+    padding: 5px;
+    margin: 0 10px;
+    border-radius: 2px;
+  }
+  .sign-out {
+    display: inline-block;
+    width: 100%;
+    color: white;
+    font-size: 14px;
   }
 </style>
 
+<svelte:window on:click={hideUserDetail}/>
+
 <div class='sidebar'>
   <h1>{title}</h1>
-  <p class='user-name'>{userName}</p>
+  <div class='user-container'>
+    <div>
+      <p class='user-name'>{userName}</p>
+      <button class='detail-button' on:click|stopPropagation={toggleUserDetail}>
+        <i class='material-icons'>arrow_drop_down</i>
+      </button>
+    </div>
 
-  <ul class='sidebar-contents'>
-    <li class='sidebar-item'>
-      <a href='signOut' on:click|preventDefault={onSignOut}>Sign Out</a>
-    </li>
-    <li><ChatRoomList on:add-room /></li>
-  </ul>
+    {#if isShowUserDetail}
+      <div class='user-detail'>
+        <a class='sign-out' href='signOut' on:click|preventDefault={onSignOut}>Sign Out</a>
+      </div>
+    {/if}
+  </div>
+
+  <ChatRoomList {roomId} {userName} on:add-room on:select-room />
 </div>
 
