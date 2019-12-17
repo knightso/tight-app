@@ -3,19 +3,19 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Svelte app</title>
+    <title>Svelte app</title>
 
-	<link rel='icon' type='image/png' href='/favicon.png'>
-	<link rel='stylesheet' href='/global.css'>
-	<link rel='stylesheet' href='/build/bundle.css'>
+    <link rel='icon' type='image/png' href='/favicon.png'>
+    <link rel='stylesheet' href='/global.css'>
+    <link rel='stylesheet' href='/build/bundle.css'>
 
-	<script defer src='/build/bundle.js'></script>
+    <script defer src='/build/bundle.js'></script>
 
     <!-- update the version number as needed -->
     <script defer src="/__/firebase/7.5.2/firebase-app.js"></script>
     <!-- include only the Firebase features as you need -->
     <script defer src="/__/firebase/7.5.2/firebase-auth.js"></script>
-    <script defer src="/__/firebase/7.5.2/firebase-database.js"></script>
+    <script defer src="/__/firebase/7.5.2/firebase-firestore.js"></script>
     <script defer src="/__/firebase/7.5.2/firebase-messaging.js"></script>
     <script defer src="/__/firebase/7.5.2/firebase-storage.js"></script>
     <!-- initialize the SDK after all desired features are loaded -->
@@ -36,7 +36,7 @@
 
         try {
           let app = firebase.app();
-          let features = ['auth', 'database', 'messaging', 'storage'].filter(feature => typeof app[feature] === 'function');
+          let features = ['auth', 'firestore', 'messaging', 'storage'].filter(feature => typeof app[feature] === 'function');
           console.log(`Firebase SDK loaded with ${features.join(', ')}`)
         } catch (e) {
           console.error(e);

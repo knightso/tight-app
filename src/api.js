@@ -11,14 +11,26 @@ export function roomList() {
   return _rooms;
 }
 
-export function addRoom(name, members) {
-  const id = new Date().getTime().toString();
-  const room = {id: id, name: name, members: members};
+export function addRoom(name, owner, members) {
+  let db = firebase.firestore();
 
-  _rooms = [..._rooms, room];
-  rooms.update(list => list.concat(room));
+  return db.collection("rooms").add({
+    name: name, 
+    owner: owner,
+    members: members
+  })
+  .then(function(docRef) {
+    let roomId = docRef.id;
 
-  return id;
+    console.log("A document written with ID: ", roomId);
+
+    // 登録したコードを追加(Svelte)
+    let room = {id: roomId, name: name, owner: owner, members: members};
+    _rooms = [..._rooms, room];
+    rooms.update(list => list.concat(room));
+
+    return room;
+  });
 }
 
 export function editRoomName(roomId, name) {
@@ -106,7 +118,6 @@ export function signIn(email, password) {
   firebase.auth().signInWithEmailAndPassword(email, password)
   .then(function(userCredential) {
     let user = userCredential.user;
-    //console.log(user)
 
     if (!user.emailVerified) {
       const actionCodeSettings = {

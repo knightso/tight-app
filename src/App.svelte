@@ -11,7 +11,7 @@
 
   let isShowRoomForm = false;
   let selectedRoom;
-
+  
   function onSignOut() {
     api.signOut();
   }
@@ -26,10 +26,13 @@
 
   function createRoom(event) {
     const {name, members} = event.detail;
-    const roomId = api.addRoom(name, members);
-    hideRoomForm();
-
-    selectedRoom = api.getRoom(roomId);
+    api.addRoom(name, members[0], members).then(function(room) {
+       hideRoomForm();
+       selectedRoom = room;
+    })
+    .catch(function(error) {
+      console.error("Error adding a document: ", error);
+    });
   }
 
   function onSelectRoom(event) {
