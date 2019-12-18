@@ -7,7 +7,22 @@ const MD5 = function(d){let result = M(V(Y(X(d),8*d.length)));return result.toLo
 export const rooms = writable([]);
 let _rooms = [];
 
-export function roomList() {
+export function roomList(email) {
+  let db = firebase.firestore();
+
+  db.collection("rooms").where("members", "array-contains", email)
+    .get()
+    .then(function(querySnapshot) {
+        _rooms = [];
+        querySnapshot.forEach(function(roomRef) {
+          let room = roomRef.data();
+          _rooms = [..._rooms, room];
+        });
+        rooms.set(_rooms);
+    })
+    .catch(function(error) {
+        console.log("Error getting documents: ", error);
+    });
   return _rooms;
 }
 
@@ -130,6 +145,8 @@ export function signIn(email, password) {
 
     _currentUser = {id: user.uid, email: user.email, name: user.email};
     currentUser.set(_currentUser);
+
+    roomList(_currentUser.email);
   })
   .catch(function(error) {
     // とりあえず手抜きでalert
