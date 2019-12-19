@@ -26,7 +26,7 @@
 
   function createRoom(event) {
     const {name, members} = event.detail;
-    api.addRoom(name, members[0], members).then(function(room) {
+    api.addRoom(name, $currentUser.email, members).then(function(room) {
        hideRoomForm();
        selectedRoom = room;
     })
@@ -63,31 +63,35 @@
     overflow: scroll;
   }
 
-  .add-room {
+  .sidebar-container {
+    width: 20vw;
+    max-width: 200px;
+    height: 100vh;
+  }
+
+  main {
+    flex: auto;
+  }
+
+  .add-room-container {
     display: flex;
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
   }
-  .add-room > button {
+
+  .add-room-button {
     margin: auto;
     padding: 20px 40px;
-    font-size: 1.2em;
+    font-size: 1.2rem;
     background: #1976d2;
     border: solid 1px #004ba0;
     border-radius: 4px;
     color: white;
   }
-  .add-room > button:hover {
+  .add-room-button:hover {
     background: #004ba0;
-  }
-
-  .sidebar-container {
-    width: max-content;
-  }
-  main {
-    flex: auto;
   }
 </style>
 
@@ -104,7 +108,7 @@
       userName={$currentUser.name}
       on:add-room={showRoomForm}
       on:select-room={onSelectRoom}
-      on:signOut={onSignOut}
+      on:sign-out={onSignOut}
     />
   </aside>
 {/if}
@@ -113,7 +117,7 @@
   {#if $currentUser && selectedRoom}
     <ChatRoom user={$currentUser} room={selectedRoom} />
   {:else if $currentUser && !selectedRoom}
-    <div class='add-room'>
+    <div class='add-room-container'>
       <button class='add-room-button' on:click={showRoomForm} >room を作成する</button>
     </div>
   {:else}

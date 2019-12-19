@@ -86,13 +86,15 @@
     background: white;
     z-index: 1;
   }
+
   .date-indicator {
     width: max-content;
     margin: auto;
     padding: 0 20px;
     background: white;
   }
-  .date-indicator:before {
+
+  .date-indicator::before {
     content: '';
     display: inline-block;
     position: absolute;
@@ -103,7 +105,8 @@
     z-index: -1;
     background: #ccc;
   }
-  .date-indicator:after {
+
+  .date-indicator::after {
     content: '';
     display: inline-block;
     position: absolute;
@@ -125,6 +128,7 @@
     padding: 0;
     margin: 0;
   }
+
   .selectable {
     cursor: pointer;
   }
@@ -137,7 +141,7 @@
 {/if}
 
 <ol bind:this={messageList} class='grouped-message-list'>
-  {#each dates as date}
+  {#each dates as date (date)}
     <li>
       <div>
         <div class='date-indicator-container'>

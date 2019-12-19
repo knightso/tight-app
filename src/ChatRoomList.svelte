@@ -53,10 +53,11 @@
     background: #63a4ff;
   }
   .room-list-item.selected {
+    margin: 0 10px;
     background: #004ba0;
-    border-top: solid 1px #53a4ff;
-    border-bottom: solid 1px #53a4ff;
+    border-radius: 4px;
   }
+
   .room-list-item > a {
     display: inline-block;
     color: white;

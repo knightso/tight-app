@@ -11,7 +11,7 @@
   const dispatch = createEventDispatcher();
 
   function onSignOut() {
-    dispatch('signOut');
+    dispatch('sign-out');
   }
 
   function toggleUserDetail() {
@@ -24,13 +24,13 @@
 
 <style>
   .sidebar {
-    width: 20vw;
-    height: 100vh;
-    max-width: 200px;
+    width: 100%;
+    height: 100%;
     background: #1976d2;
     border-right: solid 1px #ccc;
     overflow: scroll;
   }
+
   .sidebar > h1 {
     color: white;
     font-weight: normal;
@@ -43,13 +43,15 @@
     display: flex;
     flex-direction: column;
   }
+
   .user-name {
     float: left;
     margin: 4px 0 0 0;
     padding-left: 10px;
-    font-size: 14px;
+    font-size: 0.9rem;
     color: white;
   }
+
   .detail-button {
     height: 1em;
     margin: 0;
@@ -58,20 +60,23 @@
     border: none;
     color: white;
   }
+
   .detail-button > i {
     height: 100%;
   }
+
   .user-detail {
     background: #000a;
     padding: 5px;
     margin: 0 10px;
     border-radius: 2px;
   }
+
   .sign-out {
     display: inline-block;
     width: 100%;
     color: white;
-    font-size: 14px;
+    font-size: 0.9rem;
   }
 </style>
 

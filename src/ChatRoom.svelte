@@ -4,6 +4,7 @@
   import ChatMessageList from './ChatMessageList.svelte';
   import MessageInput from './MessageInput.svelte';
   import MessageSearch from './MessageSearch.svelte';
+  import UserList from './UserList.svelte';
   import * as api from './api.js';
 
   export let user;
@@ -111,8 +112,25 @@
   .message-input {
     margin: 0 10px 20px 10px;
   }
-</style>
 
+  .sidebar {
+    margin-top: 0.5rem;
+    border-top: solid 1px #ccc;
+    border-left: solid 1px #ccc;
+    width: 20vw;
+    max-width: 240px;
+    background: #fafafa;
+    overflow: scroll;
+  }
+  .sidebar-title {
+    margin: 0;
+    padding: 10px;
+    text-align: center;
+    border-bottom: solid 1px #ccc;
+    font-size: 1.5rem;
+    font-weight: normal;
+  }
+</style>
 
 <div class='container' tabindex=0 on:keydown={onKeydown}>
   <header class='room-header'>
@@ -124,6 +142,11 @@
     <div class='content'>
       <ChatMessageList bind:this={messageList} userId={user.id} messages={$messages} showMenu={true} on:edit={onEdit} on:delete={onDelete} on:history={onShowHistory} />
       <div class='message-input'><MessageInput bind:this={messageInput} value='' on:message={addMessage} /></div>
+    </div>
+
+    <div class='sidebar'>
+      <h1 class='sidebar-title'>Members</h1>
+      <UserList emails={room.members} />
     </div>
   </div>
 </div>

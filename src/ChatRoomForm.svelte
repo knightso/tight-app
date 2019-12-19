@@ -23,18 +23,22 @@
   .container {
     padding: 10px;
   }
+
   h1 {
     margin: 0;
   }
+
   #members {
     width: 100%;
   }
+
   small {
     margin-left: 10px;
   }
   small::before {
     content: '※'
   }
+
   button {
     padding: 10px;
     color: white;

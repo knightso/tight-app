@@ -22,6 +22,7 @@
   ol {
     display: flex;
   }
+
   button {
     height: 28px;
     padding: 0 10px;
@@ -30,6 +31,7 @@
   button:hover {
     background: #ccc;
   }
+
   li > button {
     border-radius: 0 0 0 0;
   }
