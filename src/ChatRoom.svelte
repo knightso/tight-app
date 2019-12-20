@@ -25,6 +25,7 @@
   }
 
   function addMessage(event) {
+    console.log('addMessage', room);
     api.addMessage(room, user, event.detail.text);
   }
 
