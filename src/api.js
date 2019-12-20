@@ -17,19 +17,21 @@ export function roomList(email) {
         _rooms = [];
         querySnapshot.forEach(function(roomRef) {
           let room = roomRef.data();
+          room.id = roomRef.id;
           _rooms = [..._rooms, room];
         });
         rooms.set(_rooms);
     })
     .catch(function(error) {
-        console.log("Error getting documents: ", error);
+        console.log("Error getting rooms: ", error);
     });
   return _rooms;
 }
 
 export function addRoom(name, owner, members) {
   let db = firebase.firestore();
-  
+  ddMessage
+
   let uniq_members = Array.from(new Set(members.concat(owner)));
 
   return db.collection("rooms").add({
@@ -40,9 +42,9 @@ export function addRoom(name, owner, members) {
   .then(function(docRef) {
     let roomId = docRef.id;
 
-    console.log("A document written with ID: ", roomId);
+    console.log("A room written with ID: ", roomId);
 
-    // 登録したコードを追加(Svelte)
+    // 登録したroomをUIに追加(Svelte)
     let room = {id: roomId, name: name, owner: owner, members: uniq_members};
     _rooms = [..._rooms, room];
     rooms.update(list => list.concat(room));
@@ -85,14 +87,34 @@ function newMessage(messageId, user, text) {
   return {id: messageId, userId: user.id, userName: user.name, text: text, timestamp: new Date()};
 }
 
-export function addMessage(roomId, user, text) {
-  const id = new Date().getTime().toString();
-  const message = newMessage(id, user, text);
+export function addMessage(room, user, text) {
+  console.log('adding message', room, user, text);
+  
+  let db = firebase.firestore();
 
-  messageHistories[id] = [message];
-  _messages[roomId] = [..._messages[roomId] || [], message];
+  let message = {
+    from: user.email,
+    text: text,
+    members: room.members,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
 
-  getMessages(roomId).update(list => list.concat(message));
+  return db.collection("rooms").doc(room.id).collection("messages").add(message)
+  .then(function(docRef) {
+    return docRef.get();
+  })
+  .then(function(docRef) {
+    let added = docRef.data();
+    added.id = docRef.id;
+    
+    console.log("A message written with ID: ", message.id, added);
+
+    // 登録したmessageをUIに追加(Svelte)
+    _messages[room.id] = [..._messages[room.id] || [], added];
+    getMessages(room.id).update(list => list.concat(added));
+
+    return added;
+  });
 }
 
 export function editMessage(roomId, user, messageId, text) {

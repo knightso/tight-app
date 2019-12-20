@@ -25,7 +25,7 @@
   }
 
   function addMessage(event) {
-    api.addMessage(room.id, user, event.detail.text);
+    api.addMessage(room, user, event.detail.text);
   }
 
   function onSelectSearchMessage(event) {

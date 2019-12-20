@@ -27,9 +27,11 @@
   }
 
   function messageDate(message) {
-    const year = message.timestamp.getFullYear();
-    const month = message.timestamp.getMonth();
-    const day = message.timestamp.getDate();
+    const date = message.createdAt.toDate();
+    console.log(message);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
 
     return new Date(year, month, day).getTime();
   }

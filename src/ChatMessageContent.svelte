@@ -18,6 +18,7 @@
   }
 
   function formattedTimestamp(date) {
+    date = date.toDate();
     const hours = `0${date.getHours()}`.slice(-2);
     const minutes = `0${date.getMinutes()}`.slice(-2);
 
@@ -92,14 +93,14 @@
 <div class='container' class:isActive on:mouseover={setActive} on:mouseleave={clearActive}>
   <div class='chat-message' class:childMessage>
     {#if childMessage}
-      <span class='timestamp child-message'>{isActive ? formattedTimestamp(message.timestamp) : ''}</span>
+      <span class='timestamp child-message'>{isActive ? formattedTimestamp(message.createdAt) : ''}</span>
     {:else}
       <span class='user-icon'>
-        <img src={`https://www.gravatar.com/avatar/${MD5(message.userName)}?default=retro`} width='36px' height='36px' alt='user icon' />
+        <img src={`https://www.gravatar.com/avatar/${MD5(message.from)}?default=retro`} width='36px' height='36px' alt='user icon' />
       </span>
       <div class='message-header'>
-        <span class='user-name'>{message.userName}</span>
-        <span class='timestamp'>{formattedTimestamp(message.timestamp)}</span>
+        <span class='user-name'>{message.from}</span>
+        <span class='timestamp'>{formattedTimestamp(message.createdAt)}</span>
       </div>
     {/if}
 
