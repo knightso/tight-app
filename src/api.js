@@ -8,7 +8,7 @@ export const MD5 = function(d){let result = M(V(Y(X(d),8*d.length)));return resu
 
 export const rooms = writable([]);
 
-export function roomList(email) {
+export function getRooms(email) {
   let db = firebase.firestore();
 
   return db.collection("rooms").where("members", "array-contains", email)
@@ -79,13 +79,36 @@ export function getRoom(roomId) {
 export const messages = writable([]);
 let messageHistories = {};
 
-export function getMessages(roomId) {
+export function messagesOf(roomId) {
   let roomMessages = messages[roomId];
   if (!roomMessages) {
     roomMessages = writable([]);
     messages[roomId] = roomMessages;
   }
   return roomMessages;
+}
+
+export function getMessages(roomId, email) {
+  let db = firebase.firestore();
+
+  return db.collection("rooms").doc(roomId).collection("messages").where("members", "array-contains", email).orderBy("createdAt")
+    .get()
+    .then(function(querySnapshot) {
+        let _messages = [];
+        querySnapshot.forEach(function(msgRef) {
+          let msg = msgRef.data();
+          msg.id = msgRef.id;
+          _messages = [..._messages, msg];
+        });
+        messagesOf(roomId).set(_messages);
+
+        console.log(_messages);
+
+        return _messages;
+    })
+    .catch(function(error) {
+        console.log("Error getting rooms: ", error);
+    });
 }
 
 function newMessage(messageId, user, text) {
@@ -115,7 +138,7 @@ export function addMessage(room, user, text) {
     console.log("A message written with ID: ", added.id);
 
     // 登録したmessageをUIに追加(Svelte)
-    getMessages(room.id).update(list => list.concat(added));
+    messagesOf(room.id).update(list => list.concat(added));
 
     return added;
   });
@@ -131,7 +154,7 @@ export function editMessage(roomId, user, messageId, text) {
   const idx = _messages[roomId].findIndex(m => m.id === messageId);
   _messages[roomId][idx] = message;
 
-  getMessages(roomId).update(list => {
+  messagesOf(roomId).update(list => {
     list[idx] = message;
     return list;
   });
@@ -143,7 +166,7 @@ export function deleteMessage(messageId) {
   const idx = _messages.findIndex(m => m.id === messageId);
   _messages[roomId][idx].deleted = true;
 
-  getMessages(roomId).update(list => {
+  messagesOf(roomId).update(list => {
     list[idx].deleted = true;
     return list;
   });
@@ -179,7 +202,7 @@ export function signIn(email, password) {
     const _currentUser = {id: user.uid, email: user.email, name: user.email};
     currentUser.set(_currentUser);
 
-    roomList(_currentUser.email);
+    getRooms(_currentUser.email);
   })
   .catch(function(error) {
     // とりあえず手抜きでalert

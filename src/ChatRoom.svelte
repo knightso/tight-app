@@ -10,7 +10,7 @@
   export let user;
   export let room;
 
-  $: messages = api.getMessages(room.id);
+  $: messages = api.messagesOf(room.id);
 
   let messageInput;
   let isShowSearch = false;
@@ -18,7 +18,10 @@
   let messageHistories = [];
   let messageList;
 
-  onMount(() => messageInput.focus());
+  onMount(() => {
+    api.getMessages(room.id, user.email)
+    .then(() => { messageInput.focus(); });
+  });
 
   function onKeydown() {
     messageInput.focus();
