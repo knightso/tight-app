@@ -30,24 +30,29 @@ export function roomList(email) {
 
 export function addRoom(name, owner, members) {
   let db = firebase.firestore();
-  ddMessage
 
   let uniq_members = Array.from(new Set(members.concat(owner)));
 
-  return db.collection("rooms").add({
+  let room = {
     name: name, 
     owner: owner,
-    members: members
+    members: uniq_members
+  };
+
+
+  return db.collection("rooms").add(room)
+  .then(function(docRef) {
+    return docRef.get();
   })
   .then(function(docRef) {
-    let roomId = docRef.id;
+    let added = docRef.data();
+    added.id = docRef.id;
 
-    console.log("A room written with ID: ", roomId);
+    console.log("A room written with ID: ", added.id);
 
     // 登録したroomをUIに追加(Svelte)
-    let room = {id: roomId, name: name, owner: owner, members: uniq_members};
-    _rooms = [..._rooms, room];
-    rooms.update(list => list.concat(room));
+    _rooms = [..._rooms, added];
+    rooms.update(list => list.concat(added));
 
     return room;
   });
@@ -107,7 +112,7 @@ export function addMessage(room, user, text) {
     let added = docRef.data();
     added.id = docRef.id;
     
-    console.log("A message written with ID: ", message.id, added);
+    console.log("A message written with ID: ", added.id);
 
     // 登録したmessageをUIに追加(Svelte)
     _messages[room.id] = [..._messages[room.id] || [], added];
