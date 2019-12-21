@@ -88,26 +88,35 @@ export function messagesOf(roomId) {
   return roomMessages;
 }
 
+function hasMessagesOf(roomId) {
+  return !!messages[roomId];
+}
+
 export function getMessages(roomId, email) {
+  // realtime updateする様にしたのでクエリ発行済のルームは再取得しません
+  if (hasMessagesOf(roomId)) {
+    return get(messagesOf(roomId));
+  }
+
   let db = firebase.firestore();
 
   return db.collection("rooms").doc(roomId).collection("messages").where("members", "array-contains", email).orderBy("createdAt")
-    .get()
-    .then(function(querySnapshot) {
+    .onSnapshot(function(querySnapshot) {
         let _messages = [];
         querySnapshot.forEach(function(msgRef) {
-          let msg = msgRef.data();
+          let msg = msgRef.data({serverTimestamps: "estimate"});
           msg.id = msgRef.id;
           _messages = [..._messages, msg];
         });
+
+        // UIに反映（Svelte）
         messagesOf(roomId).set(_messages);
 
         console.log(_messages);
 
         return _messages;
-    })
-    .catch(function(error) {
-        console.log("Error getting rooms: ", error);
+    }, function(error) {
+        console.log("Error getting messages: ", error);
     });
 }
 
@@ -135,10 +144,11 @@ export function addMessage(room, user, text) {
     let added = docRef.data();
     added.id = docRef.id;
     
-    console.log("A message written with ID: ", added.id);
+    console.log("A message written with ID: ", added.id, added);
 
     // 登録したmessageをUIに追加(Svelte)
-    messagesOf(room.id).update(list => list.concat(added));
+    // realtime update litenerで更新する為コメントアウト
+    //messagesOf(room.id).update(list => list.concat(added));
 
     return added;
   });

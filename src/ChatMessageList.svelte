@@ -27,8 +27,8 @@
   }
 
   function messageDate(message) {
+    //const date = message.createdAt ? message.createdAt.toDate(): new Date();
     const date = message.createdAt.toDate();
-    console.log(message);
     const year = date.getFullYear();
     const month = date.getMonth();
     const day = date.getDate();
