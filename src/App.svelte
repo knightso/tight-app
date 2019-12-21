@@ -38,6 +38,8 @@
   function onSelectRoom(event) {
     selectedRoom = api.getRoom(event.detail.id);
     console.log('selectedRoom', selectedRoom);
+
+    api.getMessages(selectedRoom.id, $currentUser.email);
   }
 </script>
 

@@ -19,8 +19,8 @@
   let messageList;
 
   onMount(() => {
-    api.getMessages(room.id, user.email)
-    .then(() => { messageInput.focus(); });
+    //api.getMessages(room.id, user.email);
+    //.then(() => { messageInput.focus(); });
   });
 
   function onKeydown() {
