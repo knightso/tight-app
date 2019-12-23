@@ -20,8 +20,15 @@
     }
 
     notFound = false;
-    messages = api.searchMessages(roomId, searchText);
-    notFound = messages.length === 0;
+
+    api.searchMessages(roomId, searchText).then(function(msgs) {
+      messages = msgs;
+      console.log(messages);
+      notFound = messages.length === 0;
+    })
+    .catch(function(error) {
+        console.log("Error searching messages: ", error);
+    });
   }
 </script>
 

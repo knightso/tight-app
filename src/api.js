@@ -103,10 +103,11 @@ export function getMessages(roomId, email) {
   return db.collection("rooms").doc(roomId).collection("messages").where("members", "array-contains", email).orderBy("createdAt")
     .onSnapshot(function(querySnapshot) {
         let _messages = [];
+
         querySnapshot.forEach(function(msgRef) {
           let msg = msgRef.data({serverTimestamps: "estimate"});
           msg.id = msgRef.id;
-          _messages = [..._messages, msg];
+          _messages.push(msg);
         });
 
         // UIに反映（Svelte）
@@ -135,6 +136,11 @@ export function addMessage(room, user, text) {
     members: room.members,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
+
+  // 検索用インデックス作成
+  const memberIdx = message.members.map(token => `m ${token}`);
+  const textIdx = bigram(message.text).map(token => `t ${token}`);
+  message.indexes = Array.from(new Set(memberIdx.concat(textIdx)));
 
   return db.collection("rooms").doc(room.id).collection("messages").add(message)
   .then(function(docRef) {
@@ -187,8 +193,31 @@ export function getMessageHistories(messageId) {
 }
 
 export function searchMessages(roomId, text) {
-  let _messages = get(messages);
-  return (_messages[roomId] || []).filter(message => message.text.includes(text));
+
+  let user = get(currentUser);
+
+  let db = firebase.firestore();
+
+  let indexes = bigram(text).map(token => `t ${token}`);
+  indexes.push(`m ${user.email}`);
+  indexes = Array.from(new Set(indexes));
+
+  console.log(indexes);
+
+  let query = db.collectionGroup("messages")
+  indexes.forEach(idx => {query = query.where("indexes", "array-contains", idx);});
+
+  return query.orderBy("createdAt", "desc").get().then(function (querySnapshot) {
+      let _messages = [];
+
+      querySnapshot.forEach(function (msgRef) {
+        let msg = msgRef.data({serverTimestamps: "estimate"});
+        msg.id = msgRef.id;
+        _messages = _messages.push(msg);
+      });
+
+      return _messages;;
+    })
 }
 
 // user account
@@ -249,3 +278,18 @@ export function signOut() {
     window.alert('sign-out failed. ' + error.code + ':' + error.message);
   });
 }
+
+function bigram(s) {
+  let resultSet = new Set();
+
+  let prev;
+  for (let i = 0; i < s.length; i++) {
+  	if (i > 0 && prev != ' ' && s[i] != ' ') {
+    	resultSet.add(s[i-1] + s[i]);
+    }
+    prev = s[i];
+  }
+  return Array.from(resultSet);
+}
+
+
