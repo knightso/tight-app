@@ -54,7 +54,7 @@
 {#if isEditing}
   <div class='edit-contaier'>
     <span class='user-icon'>
-      <img src={`https://www.gravatar.com/avatar/${message.userId}?default=retro`} width='36px' height='36px' alt='user icon' />
+      <img src={`https://www.gravatar.com/avatar/${message.from}?default=retro`} width='36px' height='36px' alt='user icon' />
     </span>
     <MessageInput bind:this={messageInput} value={message.text} on:message={saveMessage} />
     <button class='cancel-button' on:click={cancelEdit}>Cancel</button>

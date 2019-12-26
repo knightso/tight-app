@@ -109,7 +109,7 @@
 
   {#if isActive && showMenu}
     <span class='edit-menu' class:childMessage>
-      <ChatMessageEditMenu owner={message.userId === userId} on:edit on:delete on:history />
+      <ChatMessageEditMenu owner={message.from === userId} on:edit on:delete on:history />
     </span>
   {/if}
 </div>
