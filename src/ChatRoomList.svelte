@@ -8,7 +8,9 @@
   const dispatch = createEventDispatcher();
 
   function filterRoomsForUser(allRooms) {
-    return allRooms.filter(room => room.members.includes(userName));
+    return allRooms
+      .filter(room => room.members.includes(userName))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   function onAddRoom() {
