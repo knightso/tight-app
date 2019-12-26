@@ -156,7 +156,7 @@
                 {userId}
                 {message}
                 {showMenu}
-                childMessage={useCompact && i > 0 && groupedMessage[date][i-1].userId === message.userId}
+                childMessage={useCompact && i > 0 && groupedMessage[date][i-1].from === message.from}
                 on:message={e => onEdit(message.id, e)}
                 on:delete={() => onDelete(message)}
                 on:history={() => onShowHistory(message.id)}
