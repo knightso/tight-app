@@ -18,7 +18,18 @@ service cloud.firestore {
         request.auth.token.email == request.resource.data.from && 
         request.auth.token.email in request.resource.data.members;
       allow read: if request.auth.uid != null &&
-        request.auth.token.email_verified
+        request.auth.token.email_verified &&
+        request.auth.token.email in resource.data.members;
+    }
+
+    match /{path=**}/messageIndexes/{index} {
+      allow create: if request.auth.uid != null &&
+        request.auth.token.email_verified && 
+        request.auth.token.email == request.resource.data.from && 
+        request.auth.token.email in request.resource.data.members;
+      allow read: if request.auth.uid != null &&
+        request.auth.token.email_verified &&
+        request.auth.token.email in resource.data.members;
     }
   }
 }

@@ -113,8 +113,6 @@ export function getMessages(roomId, email) {
         // UIに反映（Svelte）
         messagesOf(roomId).set(_messages);
 
-        console.log(_messages);
-
         return _messages;
     }, function(error) {
         console.log("Error getting messages: ", error);
@@ -126,37 +124,45 @@ function newMessage(messageId, user, text) {
 }
 
 export function addMessage(room, user, text) {
-  console.log('adding message', room, user, text);
-  
-  let db = firebase.firestore();
+  const db = firebase.firestore();
+
+  const msgRef = db.collection("rooms").doc(room.id).collection("messages").doc()
+
+  // 検索結果を降順にソートする為に反転させたタイムスタンプ文字列をプレフィクスに付与する
+  const epoch3000 = 32503680000000; // 3000.1.1のUNIXミリ秒
+  const tsPrefix = new Date(32503680000000 - Date.now()).toISOString();
+  const msgIdxId = `${tsPrefix} ${room.id} ${msgRef.id}`;
+
+  const msgIdxRef = db.collection("messageIndexes").doc(msgIdxId)
 
   let message = {
     from: user.email,
     text: text,
     members: room.members,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    indexId: msgIdxId
   };
+  
+  let messageIndex = {
+    from: user.email,
+    members: room.members,
+    roomId: room.id,
+    messageId: msgRef.id,
+    indexes: {} // 検索用インデックス
+  }
 
   // 検索用インデックス作成
-  const memberIdx = message.members.map(token => `m ${token}`);
-  const textIdx = bigram(message.text).map(token => `t ${token}`);
-  message.indexes = Array.from(new Set(memberIdx.concat(textIdx)));
+  biunigram(message.text).forEach(idx => {messageIndex.indexes[idx] = true});
 
-  return db.collection("rooms").doc(room.id).collection("messages").add(message)
-  .then(function(docRef) {
-    return docRef.get();
-  })
-  .then(function(docRef) {
-    let added = docRef.data();
-    added.id = docRef.id;
-    
-    console.log("A message written with ID: ", added.id, added);
+  // 登録
+  const batch = db.batch();
 
-    // 登録したmessageをUIに追加(Svelte)
-    // realtime update litenerで更新する為コメントアウト
-    //messagesOf(room.id).update(list => list.concat(added));
+  batch.set(msgRef, message);
+  batch.set(msgIdxRef, messageIndex);
 
-    return added;
+  batch.commit().catch(function(error) {
+    // とりあえず手抜きでalert
+    window.alert('message post failed. ' + error.code + ':' + error.message);
   });
 }
 
@@ -198,26 +204,40 @@ export function searchMessages(roomId, text) {
 
   let db = firebase.firestore();
 
-  let indexes = bigram(text).map(token => `t ${token}`);
-  indexes.push(`m ${user.email}`);
-  indexes = Array.from(new Set(indexes));
+  text = text.trim().toLowerCase();
 
-  console.log(indexes);
+  let tokens = [];
+  if (text.length == 1) {
+    tokens = [text]; // 1文字のみの場合はそのまま検索
+  } else if (text.length > 1) {
+    tokens = bigram(text); // 2文字以上はbigramに分割
+  }
 
-  let query = db.collectionGroup("messages")
-  indexes.forEach(idx => {query = query.where("indexes", "array-contains", idx);});
+  // まずmessageIndexesに対してクエリ実行して、そこからmessagesを参照する
+  let query = db.collection("messageIndexes").where("members", "array-contains", user.email);
 
-  return query.orderBy("createdAt", "desc").get().then(function (querySnapshot) {
-      let _messages = [];
+  // indexesに対しトークン全てを「==」で検索する
+  // フィールド名にアルファベット・数字以外が含まれる場合はfirebase.firestore.FieldPathを使う必要がある
+  tokens.forEach(token => {query = query.where(new firebase.firestore.FieldPath("indexes", token), "==", true);});
 
-      querySnapshot.forEach(function (msgRef) {
+  return query.get().then(function (querySnapshot) {
+    let _msgPromises = [];
+
+    querySnapshot.forEach(function (idxRef) {
+      let idx = idxRef.data();
+
+      // messageIndexesの検索結果を元にmessagesドキュメントを取得
+      _msgPromises.push(db.collection("rooms").doc(idx.roomId).collection("messages").doc(idx.messageId).get());
+    })
+
+    return Promise.all(_msgPromises).then(function(values) {
+      return values.map(msgRef => {
         let msg = msgRef.data({serverTimestamps: "estimate"});
         msg.id = msgRef.id;
-        _messages = _messages.push(msg);
+        return msg;
       });
-
-      return _messages;;
-    })
+    });
+  });
 }
 
 // user account
@@ -280,16 +300,37 @@ export function signOut() {
 }
 
 function bigram(s) {
+  s = s.trim().replace(/\s\s*/g, ' ');
+
   let resultSet = new Set();
 
   let prev;
   for (let i = 0; i < s.length; i++) {
-  	if (i > 0 && prev != ' ' && s[i] != ' ') {
-    	resultSet.add(s[i-1] + s[i]);
+    if (i > 0 && prev != ' ' && s[i] != ' ') {
+      resultSet.add((s[i-1] + s[i]).toLowerCase());
     }
     prev = s[i];
   }
   return Array.from(resultSet);
 }
+
+function unigram(s) {
+  s = s.trim().replace(/\s\s*/g, ' ');
+
+  let resultSet = new Set();
+
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] != ' ') {
+      resultSet.add(s[i].toLowerCase());
+    }
+  }
+  return Array.from(resultSet);
+}
+
+function biunigram(s) {
+  return bigram(s).concat(unigram(s));
+}
+
+
 
 
